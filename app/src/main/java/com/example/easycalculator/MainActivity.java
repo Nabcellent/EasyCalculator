@@ -8,6 +8,9 @@ import android.widget.TextView;
 
 import com.google.android.material.button.MaterialButton;
 
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     TextView solutionTxt, resultTxt;
     MaterialButton btnC, btnBrackOpen, btnBrackClose;
@@ -58,9 +61,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (btnText.equals("AC")) {
             solutionTxt.setText("");
-            resultTxt.setText(0);
+            resultTxt.setText("0");
             return;
-        } else if (btnText.equals("")) {
+        } else if (btnText.equals("=")) {
             solutionTxt.setText(resultTxt.getText());
             return;
         } else if (btnText.equals("C")) {
@@ -70,9 +73,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         solutionTxt.setText(dataToCalculate);
+
+        String result = solve(dataToCalculate);
+
+        if(!result.equals("Err")) resultTxt.setText(result);
     }
 
     String solve(String data) {
-        return "Calculateed";
+        try {
+            Context c = Context.enter();
+            c.setOptimizationLevel(-1);
+
+            Scriptable scriptable = c.initStandardObjects();
+
+            String result = c.evaluateString(scriptable, data, "Javascript", 1, null).toString();
+
+            if(result.endsWith(".0")) result = result.replace(".0", "");
+
+            return result;
+        } catch (Exception e) {
+            return "Err";
+        }
     }
 }
